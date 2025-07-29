@@ -1,5 +1,8 @@
 package org.acme.types;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record PlayedGame(
   String name,
   GamePlatform platform,

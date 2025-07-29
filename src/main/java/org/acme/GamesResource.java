@@ -1,17 +1,20 @@
 package org.acme;
 
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.POST;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.Set;
-
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-
-import jakarta.ws.rs.Path;
+import java.util.stream.Collectors;
 
 import org.acme.types.PlayedGame;
 import org.acme.types.GamePlatform;
@@ -19,7 +22,7 @@ import org.acme.types.GamePlatform;
 @Path("/games")
 public class GamesResource {
 
-  private Set<PlayedGame> loggedGames = new HashSet<>();
+  private Set<PlayedGame> loggedGames = Collections.synchronizedSet(new HashSet<>());
 
   {
     this.loggedGames.add(PlayedGame.create("Alien Soldier", GamePlatform.SEGA_MD, 1995, 9));
@@ -34,31 +37,47 @@ public class GamesResource {
     this.loggedGames.add(PlayedGame.create("The Lost Vikings", GamePlatform.PC_DOS, 1993, 9));
   }
 
-  private Set<PlayedGame> safeCopy() {
-    return Collections.synchronizedSet(loggedGames);
+  @GET
+  public Response gimmeAll() {
+    return Response.ok(this.getSortedGameList()).build();
   }
 
   @GET
-  public List<PlayedGame> gimme() {
-    List<PlayedGame> ret = new ArrayList<>(this.safeCopy());
+  @Path("/{search}")
+  public Response gimmeFound(@PathParam("search") String search) {
+    Pattern nameRgx = Pattern.compile(search);
 
-    ret.sort(
+    List<PlayedGame> data = this.getSortedGameList().stream()
+      .filter(game -> nameRgx.matcher(game.name()).find())
+      .collect(Collectors.toList());
+
+    if (data.size() > 0) {
+      return Response.ok(data).build();
+    }
+    return Response.noContent().build();
+  }
+
+  private List<PlayedGame> getSortedGameList() {
+    List<PlayedGame> list = new ArrayList<>(loggedGames);
+
+    list.sort(
       Comparator.comparing(PlayedGame::rating)
         .reversed()
         .thenComparing(PlayedGame::name)
     );
-    return ret;
+
+    return list;
   }
 
   @POST
   public Set<PlayedGame> take(PlayedGame game) {
     loggedGames.add(game);
-    return this.safeCopy();
+    return loggedGames;
   }
 
   @DELETE
   public Set<PlayedGame> dontWant(String name) {
     loggedGames.removeIf(g -> g.name().equals(name));
-    return safeCopy();
+    return loggedGames;
   }
 }
