@@ -1,24 +1,15 @@
 package quark.quark;
 
-import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import quark.quark.types.GamePlatform;
 import quark.quark.types.PlayedGame;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.POST;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Path("/api/games")
 public class GamesResource {
@@ -39,12 +30,14 @@ public class GamesResource {
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   public Response gimmeAll() {
     return Response.ok(this.getSortedGameList()).build();
   }
 
   @GET
   @Path("/{search}")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response gimmeFound(@PathParam("search") String search) {
     Pattern nameRgx = Pattern.compile(search);
 
@@ -58,6 +51,26 @@ public class GamesResource {
     return Response.noContent().build();
   }
 
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response take(PlayedGame game) {
+    var added = loggedGames.add(game);
+    var res = added ? Response.ok(this.getSortedGameList()) : Response.notModified();
+
+    return res.build();
+  }
+
+  @DELETE
+  @Path("/{name}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response dontWant(@PathParam("name") String name) {
+    var removed = loggedGames.removeIf(g -> g.name().equals(name));
+    var res = removed ? Response.ok(this.getSortedGameList()) : Response.noContent();
+
+    return res.build();
+  }
+
   private List<PlayedGame> getSortedGameList() {
     List<PlayedGame> list = new ArrayList<>(loggedGames);
 
@@ -68,23 +81,5 @@ public class GamesResource {
     );
 
     return list;
-  }
-
-  @POST
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response take(PlayedGame game) {
-    var added = loggedGames.add(game);
-    var res = added ? Response.ok(this.getSortedGameList()) : Response.notModified();
-
-    return res.build();
-  }
-
-  @DELETE
-  @Path("/{name}")
-  public Response dontWant(@PathParam("name") String name) {
-    var removed = loggedGames.removeIf(g -> g.name().equals(name));
-    var res = removed ? Response.ok(this.getSortedGameList()) : Response.noContent();
-
-    return res.build();
   }
 }
