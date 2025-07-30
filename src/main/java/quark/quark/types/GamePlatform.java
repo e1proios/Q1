@@ -1,4 +1,4 @@
-package org.acme.types;
+package quark.quark.types;
 
 public enum GamePlatform {
   SEGA_MD("Sega Mega Drive / Genesis"),

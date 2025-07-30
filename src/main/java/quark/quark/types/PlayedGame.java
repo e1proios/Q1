@@ -1,4 +1,4 @@
-package org.acme.types;
+package quark.quark.types;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 

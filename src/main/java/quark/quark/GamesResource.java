@@ -1,6 +1,10 @@
-package org.acme;
+package quark.quark;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import quark.quark.types.GamePlatform;
+import quark.quark.types.PlayedGame;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -16,10 +20,7 @@ import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.acme.types.PlayedGame;
-import org.acme.types.GamePlatform;
-
-@Path("/games")
+@Path("/api/games")
 public class GamesResource {
 
   private Set<PlayedGame> loggedGames = Collections.synchronizedSet(new HashSet<>());
@@ -70,14 +71,20 @@ public class GamesResource {
   }
 
   @POST
-  public Set<PlayedGame> take(PlayedGame game) {
-    loggedGames.add(game);
-    return loggedGames;
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response take(PlayedGame game) {
+    var added = loggedGames.add(game);
+    var res = added ? Response.ok(this.getSortedGameList()) : Response.notModified();
+
+    return res.build();
   }
 
   @DELETE
-  public Set<PlayedGame> dontWant(String name) {
-    loggedGames.removeIf(g -> g.name().equals(name));
-    return loggedGames;
+  @Path("/{name}")
+  public Response dontWant(@PathParam("name") String name) {
+    var removed = loggedGames.removeIf(g -> g.name().equals(name));
+    var res = removed ? Response.ok(this.getSortedGameList()) : Response.noContent();
+
+    return res.build();
   }
 }
