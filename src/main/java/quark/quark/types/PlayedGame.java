@@ -1,20 +1,19 @@
 package quark.quark.types;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
-
-@RegisterForReflection
 public record PlayedGame(
   String name,
-  GamePlatform platform,
+  String platform,
   int released,
+  double completion,
   int rating
 ) {
-  public static PlayedGame create(
-    String name,
-    GamePlatform platform,
-    int released,
-    int rating
-  ) {
-    return new PlayedGame(name, platform, released, rating);
+  public static PlayedGame create (PlayedGameDto dto) {
+    return new PlayedGame(
+      dto.name(),
+      dto.platform(),
+      dto.released(),
+      dto.completion(),
+      dto.rating()
+    );
   }
 }
