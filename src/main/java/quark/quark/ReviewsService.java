@@ -1,18 +1,14 @@
 package quark.quark;
 
 import com.mongodb.client.*;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.bson.Document;
 
 import quark.quark.types.PlayedGame;
 import quark.quark.types.PlayedGameDto;
-
 
 @ApplicationScoped
 public class ReviewsService {

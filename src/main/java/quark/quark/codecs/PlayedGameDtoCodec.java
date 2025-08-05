@@ -1,13 +1,12 @@
 package quark.quark.codecs;
 
 import com.mongodb.MongoClientSettings;
-
-import quark.quark.types.PlayedGameDto;
-
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.codecs.*;
 import org.bson.Document;
+
+import quark.quark.types.PlayedGameDto;
 
 public class PlayedGameDtoCodec implements Codec<PlayedGameDto> {
 

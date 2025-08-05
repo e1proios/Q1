@@ -1,22 +1,20 @@
 package quark.quark;
 
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import java.util.*;
 
 import quark.quark.types.PlayedGame;
 
 @Path("/api/reviews")
-public class ReviewsResource {
-  private final ReviewsService src;
+public class ReviewsController {
 
   private Set<PlayedGame> loggedGames = Collections.synchronizedSet(new HashSet<>());
 
-  public ReviewsResource(ReviewsService src) {
-    this.src = src;
-  }
+  @Inject
+  ReviewsService src;
 
   @GET
   @Path("/")
