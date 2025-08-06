@@ -3,13 +3,16 @@ package quark.quark;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.util.*;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.jboss.resteasy.reactive.RestResponse;
 
+import quark.quark.rest.ReviewsInterface;
 import quark.quark.types.PlayedGame;
 
+@RegisterRestClient
 @Path("/api/reviews")
-public class ReviewsController {
+public class ReviewsController implements ReviewsInterface<PlayedGame> {
 
   private Set<PlayedGame> loggedGames = Collections.synchronizedSet(new HashSet<>());
 
@@ -19,7 +22,7 @@ public class ReviewsController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response gimmeAll() {
+  public RestResponse<List<PlayedGame>> gimmeAll() {
     var reviews = this.src.all();
 
     reviews.sort(
@@ -28,13 +31,13 @@ public class ReviewsController {
         .thenComparing(PlayedGame::name)
     );
 
-    return Response.ok(reviews).build();
+    return RestResponse.ok(reviews);
   }
 
   @GET
   @Path("/search/")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response gimmeFound(
+  public RestResponse<List<PlayedGame>> gimmeFound(
     @QueryParam("field") String fieldName,
     @QueryParam("search") String search
   ) {
@@ -47,9 +50,9 @@ public class ReviewsController {
     }
 
     if (reviews.size() > 0) {
-      return Response.ok(reviews).build();
+      return RestResponse.ok(reviews);
     }
-    return Response.noContent().build();
+    return RestResponse.noContent();
   }
 
   // POST and DELETE don't connect to the database
@@ -57,21 +60,17 @@ public class ReviewsController {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response take(PlayedGame game) {
+  public RestResponse<List<PlayedGame>> take(PlayedGame game) {
     var added = loggedGames.add(game);
-    var res = added ? Response.ok(this.getSortedGameList()) : Response.notModified();
-
-    return res.build();
+    return added ? RestResponse.ok(this.getSortedGameList()) : RestResponse.notModified();
   }
 
   @DELETE
   @Path("/{name}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response dontWant(@PathParam("name") String name) {
+  public RestResponse<List<PlayedGame>> dontWant(@PathParam("name") String name) {
     var removed = loggedGames.removeIf(g -> g.name().equals(name));
-    var res = removed ? Response.ok(this.getSortedGameList()) : Response.noContent();
-
-    return res.build();
+    return removed ? RestResponse.ok(this.getSortedGameList()) : RestResponse.noContent();
   }
 
   private List<PlayedGame> getSortedGameList() {
