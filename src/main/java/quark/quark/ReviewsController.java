@@ -1,26 +1,28 @@
 package quark.quark;
 
+
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import java.util.*;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.resteasy.reactive.RestResponse;
 
 import quark.quark.rest.ReviewsInterface;
 import quark.quark.types.PlayedGame;
 
-@RegisterRestClient
 @Path("/api/reviews")
 public class ReviewsController implements ReviewsInterface<PlayedGame> {
 
-  private Set<PlayedGame> loggedGames = Collections.synchronizedSet(new HashSet<>());
+  private final Set<PlayedGame> loggedGames = Collections.synchronizedSet(new HashSet<>());
 
   @Inject
   ReviewsService src;
 
   @GET
   @Path("/")
+  @RolesAllowed("user")
   @Produces(MediaType.APPLICATION_JSON)
   public RestResponse<List<PlayedGame>> gimmeAll() {
     var reviews = this.src.all();
@@ -36,6 +38,7 @@ public class ReviewsController implements ReviewsInterface<PlayedGame> {
 
   @GET
   @Path("/search/")
+  @RolesAllowed("user")
   @Produces(MediaType.APPLICATION_JSON)
   public RestResponse<List<PlayedGame>> gimmeFound(
     @QueryParam("field") String fieldName,
@@ -49,7 +52,7 @@ public class ReviewsController implements ReviewsInterface<PlayedGame> {
       reviews = this.src.search(fieldName, search);
     }
 
-    if (reviews.size() > 0) {
+    if (!reviews.isEmpty()) {
       return RestResponse.ok(reviews);
     }
     return RestResponse.noContent();
@@ -58,6 +61,7 @@ public class ReviewsController implements ReviewsInterface<PlayedGame> {
   // POST and DELETE don't connect to the database
   // they still operate with dummy data
   @POST
+  @RolesAllowed("admin")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public RestResponse<List<PlayedGame>> take(PlayedGame game) {
@@ -67,6 +71,7 @@ public class ReviewsController implements ReviewsInterface<PlayedGame> {
 
   @DELETE
   @Path("/{name}")
+  @RolesAllowed("admin")
   @Produces(MediaType.APPLICATION_JSON)
   public RestResponse<List<PlayedGame>> dontWant(@PathParam("name") String name) {
     var removed = loggedGames.removeIf(g -> g.name().equals(name));

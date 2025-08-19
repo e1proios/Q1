@@ -1,0 +1,20 @@
+quarkus:
+    keycloak:
+        admin-client:
+            server-url: "http://localhost:8888"
+        devservices:
+            realm-path: "quarkus-realm.json"
+            port: "8888"
+            shared: true
+    mongodb:
+        connection-string: "mongodb://localhost:27017"
+        database: "game-reviews"
+    oidc:
+        client-id: "quarkus-app"
+        credentials:
+            secret: "secret"
+
+"%prod":
+    quarkus:
+        oidc:
+            auth-server-url: "http://localhost:8888/realms/quarkus"
