@@ -1,6 +1,6 @@
 package quark.quark;
 
-import jakarta.annotation.security.RolesAllowed;
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -11,6 +11,7 @@ import org.jboss.resteasy.reactive.NoCache;
 import io.quarkus.security.identity.SecurityIdentity;
 
 @Path("/api/users")
+@Authenticated
 public class UsersController {
 
     @Inject
@@ -18,7 +19,6 @@ public class UsersController {
 
     @GET
     @Path("/me")
-    @RolesAllowed("user")
     @NoCache
     @Produces(MediaType.TEXT_PLAIN)
     public String me() {
