@@ -42,8 +42,8 @@ public class ReviewsService {
 
   private MongoCollection<PlayedGameDto> getAllReviews() {
     return mongo
-      .getDatabase("game-reviews")
-      .getCollection("reviews", PlayedGameDto.class);
+      .getDatabase("reviews")
+      .getCollection("games", PlayedGameDto.class);
   }
 
   private void processResults(

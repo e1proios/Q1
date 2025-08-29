@@ -1,13 +1,23 @@
 quarkus:
+    mongodb:
+        connection-string: "mongodb://localhost:27217"
+        database: "reviews"
+        credentials:
+            auth-source: "reviews"
+            username: "user"
+            password: "password"
+
     keycloak:
         policy-enforcer:
             enable: true
-    mongodb:
-        connection-string: "mongodb://localhost:27017"
-        database: "game-reviews"
+
     oidc:
         application-type: service
         auth-server-url: "http://localhost:8888/realms/quark"
         client-id: invoice-scanner-service
         credentials:
             secret: nm1Hv5Z6zHbkrYtzGJwlQBbly3mzBzlq
+#    oidc-client:
+#        auth-server-url: "http://keycloak:8888/realms/quark"
+#        grant:
+#            type: refresh
